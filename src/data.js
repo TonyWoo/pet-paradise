@@ -260,10 +260,10 @@ export const STAGES = [
   { name: '闪亮之星', need: 70, desc: '闪闪发光的最终形态！' },
 ];
 
-// 每日额度
-export const DAILY_FEED = 3;   // 每天喂食次数
-export const DAILY_PLAY = 5;   // 每天互动次数
-export const QUIZ_QUESTIONS = 5; // 每天测验题数
+// 游玩节奏：玩 30 分钟 → 休息 15 分钟，循环（防沉迷）
+export const PLAY_MINUTES = 30;  // 每轮可玩时长（分钟）
+export const REST_MINUTES = 15;  // 每轮强制休息（分钟）
+export const QUIZ_QUESTIONS = 5; // 每次测验题数
 
 // 解锁新宠物需要的总爱心
 export const UNLOCK_NEED = [0, 50, 120]; // 第1/2/3只

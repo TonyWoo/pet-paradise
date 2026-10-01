@@ -3,8 +3,8 @@
 // 领养页 → 主页（喂食 / 抚摸 / 玩耍 / 洗澡 / 单词测验 / 宠物小屋）
 // 状态更新走 commit()：深拷贝 → 改 → 落盘 → setState，全同步，无时序坑
 // ============================================================
-import { useState, useRef } from 'react';
-import { PETS, PET_ORDER, FOODS, STAGES, UNLOCK_NEED, QUIZ_QUESTIONS } from './data.js';
+import { useState, useRef, useEffect } from 'react';
+import { PETS, PET_ORDER, FOODS, STAGES, UNLOCK_NEED, QUIZ_QUESTIONS, PLAY_MINUTES, REST_MINUTES } from './data.js';
 import { loadSave, persistSave, newPet, activePet, totalHearts, addHearts, clamp } from './storage.js';
 import { PetAvatar } from './pets.jsx';
 import { StatusBar, FoodPicker, Quiz, LevelUpModal } from './components.jsx';
@@ -112,8 +112,38 @@ function PetHouse({ save, onSwitch, onUnlock, onClose }) {
   );
 }
 
+// 秒数 → mm:ss
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// ---------------- 休息遮罩：玩满 30 分钟后锁定 15 分钟 ----------------
+function RestOverlay({ save, now }) {
+  const left = Math.max(0, Math.ceil((save.restUntil - now) / 1000));
+  const pet = activePet(save);
+  return (
+    <div className="rest-mask">
+      <div className="rest-card">
+        <div className="rest-pet">
+          <PetAvatar type={pet.type} stage={pet.stage} face="sleepy" className="pet" />
+          <span className="sleep-z big">💤</span>
+        </div>
+        <h2>💤 {pet.name}睡着啦</h2>
+        <p className="rest-text">
+          已经玩了 {PLAY_MINUTES} 分钟啦<br />
+          让眼睛休息一下，{fmtTime(left)} 后再回来玩吧～
+        </p>
+        <div className="rest-count">{fmtTime(left)}</div>
+        <p className="rest-tip">💡 休息时也可以看看窗外、喝口水哦！</p>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- 主页 ----------------
-function HomeScreen({ save, commit, onUnlockRequest }) {
+function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
   const pet = activePet(save);
   const cfg = PETS[pet.type];
   const [showFood, setShowFood] = useState(false);
@@ -147,17 +177,25 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
     setTimeout(() => setAnim(''), ms);
   };
 
+  // 休息结束：弹一次"回来玩吧"提示
+  useEffect(() => {
+    if (woke) {
+      const p = activePet(save);
+      say(`☀️ 休息好啦！${p ? p.name : '小可爱'}醒啦，快回来玩吧！`);
+      clearWoke();
+    }
+  }, [woke]);
+
   // ---- 喂食 ----
   const feed = (food) => {
     setShowFood(false);
-    if (save.feedLeft <= 0) {
-      say('吃饱啦，正在睡觉💤 明天再来喂吧！');
+    if (pet.fullness >= 95) {
+      say('吃太饱啦，玩一会儿、消化消化再喂吧！');
       return;
     }
     const fav = cfg.favoriteFood === food.id;
     const { newStageName } = commit((s) => {
       const p = activePet(s);
-      s.feedLeft -= 1;
       p.fullness = clamp(p.fullness + 25);
       p.mood = clamp(p.mood + 5);
       let name = '';
@@ -175,15 +213,10 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
 
   // ---- 互动：抚摸 / 玩球 / 洗澡 ----
   const play = (kind) => {
-    if (save.playLeft <= 0) {
-      say('玩累了，想休息💤 明天再陪你玩！');
-      return;
-    }
     const word = PLAY_WORDS[kind];
     const moodAdd = kind === 'ball' ? 15 : kind === 'pet' ? 12 : 10;
     const { newStageName } = commit((s) => {
       const p = activePet(s);
-      s.playLeft -= 1;
       p.mood = clamp(p.mood + moodAdd);
       let name = '';
       if (addHearts(p, 1)) name = STAGES[p.stage].name;
@@ -214,7 +247,6 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
     setShowQuiz(false);
     const { gained, newStageName } = commit((s) => {
       const p = activePet(s);
-      s.quizDone = true;
       const g = score * 2 + (score === QUIZ_QUESTIONS ? 3 : 0);
       let name = '';
       if (addHearts(p, g)) name = STAGES[p.stage].name;
@@ -224,12 +256,12 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
     sfxHappy();
     playAnim('happy');
     float(`+${gained}💗`);
-    say(score === QUIZ_QUESTIONS ? `全对！太厉害了！+${gained}💗` : `答对 ${score} 题！+${gained}💗 明天继续加油！`);
+    say(score === QUIZ_QUESTIONS ? `全对！太厉害了！+${gained}💗` : `答对 ${score} 题！+${gained}💗 继续加油！`);
     if (newStageName) setTimeout(() => { sfxLevelUp(); setLevelUp(newStageName); }, 900);
   };
 
-  const tired = save.playLeft <= 0;
-  const face = anim === 'happy' || anim === 'jump' ? 'happy' : tired ? 'sleepy' : 'normal';
+  const resting = save.restUntil > Date.now();
+  const face = anim === 'happy' || anim === 'jump' ? 'happy' : resting ? 'sleepy' : 'normal';
 
   return (
     <div className="screen home">
@@ -240,11 +272,22 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
 
       <StatusBar pet={pet} />
 
+      {/* 本轮游玩时间 */}
+      <div className="timebar">
+        <span>⏱️ 本轮已玩 {fmtTime(save.playSec)} / {PLAY_MINUTES}:00</span>
+        <div className="timebar-track">
+          <div
+            className="timebar-fill"
+            style={{ width: `${Math.min(100, (save.playSec / (PLAY_MINUTES * 60)) * 100)}%` }}
+          />
+        </div>
+      </div>
+
       {/* 宠物舞台 */}
       <div className="stage">
         <div className={`pet-wrap anim-${anim}`}>
           <PetAvatar type={pet.type} stage={pet.stage} face={face} className="pet" />
-          {tired && <span className="sleep-z">💤</span>}
+          {resting && <span className="sleep-z">💤</span>}
           {showBall && <span className="ball">⚽</span>}
           {bubbles.map((b) => (
             <span key={b.id} className="bubble" style={{ left: `${b.left}%` }}>🫧</span>
@@ -260,40 +303,33 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
         </button>
       </div>
 
-      {/* 今日额度 */}
-      <div className="daily">
-        <span>🍼 今日喂食：{save.feedLeft > 0 ? '🍼'.repeat(save.feedLeft) : '吃饱啦💤'}</span>
-        <span>🎮 今日互动：{save.playLeft > 0 ? '⭐'.repeat(save.playLeft) : '休息中💤'}</span>
-      </div>
-
       {/* 动作按钮 */}
       <div className="actions">
-        <button className="action-btn feed" onClick={() => { sfxClick(); setShowFood(true); }} disabled={save.feedLeft <= 0}>
+        <button className="action-btn feed" onClick={() => { sfxClick(); setShowFood(true); }}>
           <span className="a-emoji">🍼</span><span>喂食</span>
         </button>
-        <button className="action-btn" onClick={() => play('pet')} disabled={save.playLeft <= 0}>
+        <button className="action-btn" onClick={() => play('pet')}>
           <span className="a-emoji">🤗</span><span>抚摸</span><span className="a-en">Pet</span>
         </button>
-        <button className="action-btn" onClick={() => play('ball')} disabled={save.playLeft <= 0}>
+        <button className="action-btn" onClick={() => play('ball')}>
           <span className="a-emoji">⚽</span><span>玩球</span><span className="a-en">Ball</span>
         </button>
-        <button className="action-btn" onClick={() => play('bath')} disabled={save.playLeft <= 0}>
+        <button className="action-btn" onClick={() => play('bath')}>
           <span className="a-emoji">🫧</span><span>洗澡</span><span className="a-en">Bath</span>
         </button>
         <button
           className="action-btn quiz-btn"
           onClick={() => { sfxClick(); setShowQuiz(true); }}
-          disabled={save.quizDone}
         >
           <span className="a-emoji">📖</span><span>学单词</span>
-          <span className="a-en">{save.quizDone ? '明天再来' : 'Quiz'}</span>
+          <span className="a-en">Quiz</span>
         </button>
       </div>
 
-      <p className="tip">💡 喂食、互动、答题都能得💗，💗攒够宠物就会长大哦！</p>
+      <p className="tip">💡 喂食、互动、答题都能得💗，💗攒够宠物就会长大哦！玩 {PLAY_MINUTES} 分钟要休息 {REST_MINUTES} 分钟，让眼睛歇一歇～</p>
 
       {showFood && <FoodPicker favoriteId={cfg.favoriteFood} onPick={feed} onClose={() => setShowFood(false)} />}
-      {showQuiz && !save.quizDone && <Quiz onDone={onQuizDone} onQuit={() => setShowQuiz(false)} />}
+      {showQuiz && <Quiz onDone={onQuizDone} onQuit={() => setShowQuiz(false)} />}
       {showHouse && (
         <PetHouse
           save={save}
@@ -304,6 +340,7 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
       )}
       {levelUp && <LevelUpModal stageName={levelUp} onClose={() => setLevelUp(null)} />}
       {toast && <div className="toast">{toast}</div>}
+      {resting && <RestOverlay save={save} now={now} />}
     </div>
   );
 }
@@ -311,8 +348,54 @@ function HomeScreen({ save, commit, onUnlockRequest }) {
 // ---------------- App 根组件 ----------------
 export default function App() {
   const [save, setSave] = useState(() => loadSave());
+  const [now, setNow] = useState(Date.now()); // 每秒刷新，驱动休息倒计时
+  const [woke, setWoke] = useState(false);    // 休息刚结束时弹一次提示
   // 解锁领养流程：null = 不在领养页；字符串 = 要领养的宠物类型
   const [adoptType, setAdoptType] = useState(null);
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  const hasPets = save.pets.length > 0;
+
+  // 游玩计时器：页面可见时才累计；满 30 分钟 → 休息 15 分钟（时间戳，关页面也继续）
+  useEffect(() => {
+    if (!hasPets) return;
+    const id = setInterval(() => {
+      const t = Date.now();
+      setNow(t);
+      const s = saveRef.current;
+      if (s.pets.length === 0) return;
+      // 休息中：等时间到
+      if (s.restUntil > t) return;
+      const next = structuredClone(s);
+      // 休息刚结束：清零，提示一次
+      if (s.restUntil !== 0 && s.restUntil <= t) {
+        next.restUntil = 0;
+        next.playSec = 0;
+        persistSave(next);
+        setSave(next);
+        setWoke(true);
+        return;
+      }
+      // 后台标签页不计时
+      if (document.visibilityState !== 'visible') return;
+      next.playSec = (next.playSec || 0) + 1;
+      // 每过 1 分钟：饱食度 -2、心情 -1（自然消化，喂食有节奏感）
+      if (next.playSec % 60 === 0) {
+        next.pets.forEach((p) => {
+          p.fullness = Math.max(10, p.fullness - 2);
+          p.mood = Math.max(20, p.mood - 1);
+        });
+      }
+      // 玩满 30 分钟 → 强制休息 15 分钟
+      if (next.playSec >= PLAY_MINUTES * 60) {
+        next.restUntil = t + REST_MINUTES * 60 * 1000;
+        next.playSec = 0;
+      }
+      persistSave(next);
+      setSave(next);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [hasPets]);
 
   // 统一的状态提交入口：深拷贝 → 改 → 落盘 → setState，全同步
   // fn 返回的对象会被原样带回（用于取升级阶段名等）
@@ -355,6 +438,9 @@ export default function App() {
         key={save.activePetId}
         save={save}
         commit={commit}
+        now={now}
+        woke={woke}
+        clearWoke={() => setWoke(false)}
         onUnlockRequest={(t) => setAdoptType(t)}
       />
     </div>

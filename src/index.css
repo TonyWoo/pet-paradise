@@ -195,14 +195,48 @@ body {
 }
 .pet-click-hint:active { transform: scale(0.96); }
 
-/* ---------- 今日额度 ---------- */
-.daily {
-  display: flex; justify-content: space-around;
+/* ---------- 本轮游玩时间条 ---------- */
+.timebar {
   background: #fff; border-radius: 999px;
-  padding: 8px 10px; margin: 12px 0;
+  padding: 8px 14px; margin: 12px 0;
   font-size: 13px; font-weight: 700;
   box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  display: flex; align-items: center; gap: 10px;
 }
+.timebar-track {
+  flex: 1; height: 10px; border-radius: 999px;
+  background: var(--pink-soft); overflow: hidden;
+}
+.timebar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--mint), var(--pink));
+  transition: width 1s linear;
+}
+
+/* ---------- 休息遮罩 ---------- */
+.rest-mask {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(255, 240, 245, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; animation: fadeIn 0.4s ease;
+}
+.rest-card {
+  background: #fff; border-radius: 28px;
+  padding: 28px 26px; text-align: center;
+  box-shadow: var(--shadow); max-width: 340px; width: 100%;
+  border: 3px solid var(--pink-soft);
+}
+.rest-card h2 { margin: 8px 0 4px; font-size: 22px; }
+.rest-pet { position: relative; display: inline-block; }
+.rest-pet .pet { width: 150px; }
+.sleep-z.big { font-size: 40px; top: -6px; right: 6px; }
+.rest-text { color: var(--ink-soft); font-size: 15px; line-height: 1.8; margin: 6px 0 12px; }
+.rest-count {
+  font-size: 44px; font-weight: 800; color: var(--pink-deep);
+  font-variant-numeric: tabular-nums; letter-spacing: 2px;
+}
+.rest-tip { font-size: 13px; color: var(--ink-soft); margin: 12px 0 0; }
 
 /* ---------- 动作按钮 ---------- */
 .actions { display: flex; gap: 8px; }

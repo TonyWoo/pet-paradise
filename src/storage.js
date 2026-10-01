@@ -2,7 +2,7 @@
 // storage.js —— localStorage 存档：保存 / 读取 / 每日重置
 // 全部数据只存在本地浏览器，零后端
 // ============================================================
-import { DAILY_FEED, DAILY_PLAY, todayStr, STAGES } from './data.js';
+import { todayStr, STAGES } from './data.js';
 
 const KEY = 'pet-paradise-save-v1';
 let nextId = 1;
@@ -25,26 +25,26 @@ function freshSave() {
   return {
     pets: [],
     activePetId: null,
-    day: todayStr(),             // 上次结算的日期
-    feedLeft: DAILY_FEED,        // 今日剩余喂食
-    playLeft: DAILY_PLAY,        // 今日剩余互动
-    quizDone: false,             // 今日测验是否已完成
+    day: todayStr(),             // 上次结算的日期（用于跨天衰减）
+    playSec: 0,                  // 本轮已玩秒数（满 30 分钟进休息）
+    restUntil: 0,                // 休息结束时间戳（0 = 不在休息）
     learnedWords: [],            // 学过的单词（英文）
   };
 }
 
-// 读取存档；读到新的一天会自动重置每日额度
+// 读取存档；兼容老存档（缺字段补默认值）；跨天宠物状态轻微衰减
 export function loadSave() {
   try {
     const raw = localStorage.getItem(KEY);
     const save = raw ? JSON.parse(raw) : freshSave();
     if (!save.pets) return freshSave();
-    // 跨天了：重置每日额度，宠物状态轻微衰减（离线不会死，只是长得慢一点）
+    // 老存档兼容：补新字段
+    if (save.playSec == null) save.playSec = 0;
+    if (save.restUntil == null) save.restUntil = 0;
+    if (!save.learnedWords) save.learnedWords = [];
+    // 跨天了：宠物状态轻微衰减（离线不会死，只是需要重新陪一会儿）
     if (save.day !== todayStr()) {
       save.day = todayStr();
-      save.feedLeft = DAILY_FEED;
-      save.playLeft = DAILY_PLAY;
-      save.quizDone = false;
       save.pets.forEach((p) => {
         p.fullness = Math.max(10, p.fullness - 20);
         p.mood = Math.max(20, p.mood - 15);
