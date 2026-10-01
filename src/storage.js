@@ -1,0 +1,98 @@
+// ============================================================
+// storage.js —— localStorage 存档：保存 / 读取 / 每日重置
+// 全部数据只存在本地浏览器，零后端
+// ============================================================
+import { DAILY_FEED, DAILY_PLAY, todayStr, STAGES } from './data.js';
+
+const KEY = 'pet-paradise-save-v1';
+let nextId = 1;
+
+// 新建一只宠物的初始数据
+export function newPet(type, name) {
+  return {
+    id: `pet-${Date.now()}-${nextId++}`,
+    type,                       // bunny | cat | fox
+    name: name || '',           // 小朋友起的名字
+    hearts: 0,                  // 累计爱心（成长经验）
+    stage: 0,                   // 成长阶段 0-4
+    mood: 60,                   // 心情值 0-100
+    fullness: 50,               // 饱食度 0-100
+  };
+}
+
+// 空存档
+function freshSave() {
+  return {
+    pets: [],
+    activePetId: null,
+    day: todayStr(),             // 上次结算的日期
+    feedLeft: DAILY_FEED,        // 今日剩余喂食
+    playLeft: DAILY_PLAY,        // 今日剩余互动
+    quizDone: false,             // 今日测验是否已完成
+    learnedWords: [],            // 学过的单词（英文）
+  };
+}
+
+// 读取存档；读到新的一天会自动重置每日额度
+export function loadSave() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    const save = raw ? JSON.parse(raw) : freshSave();
+    if (!save.pets) return freshSave();
+    // 跨天了：重置每日额度，宠物状态轻微衰减（离线不会死，只是长得慢一点）
+    if (save.day !== todayStr()) {
+      save.day = todayStr();
+      save.feedLeft = DAILY_FEED;
+      save.playLeft = DAILY_PLAY;
+      save.quizDone = false;
+      save.pets.forEach((p) => {
+        p.fullness = Math.max(10, p.fullness - 20);
+        p.mood = Math.max(20, p.mood - 15);
+      });
+      persistSave(save);
+    }
+    return save;
+  } catch {
+    return freshSave();
+  }
+}
+
+// 写入存档
+export function persistSave(save) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(save));
+  } catch {
+    // 存储空间满等极端情况：忽略，保证游戏不崩
+  }
+}
+
+// 取当前出场的宠物
+export function activePet(save) {
+  return save.pets.find((p) => p.id === save.activePetId) || save.pets[0] || null;
+}
+
+// 所有宠物累计爱心（用于解锁新宠物）
+export function totalHearts(save) {
+  return save.pets.reduce((s, p) => s + p.hearts, 0);
+}
+
+// 根据爱心计算阶段；返回 { stage, leveledUp }
+export function calcStage(hearts) {
+  let stage = 0;
+  for (let i = 0; i < STAGES.length; i++) {
+    if (hearts >= STAGES[i].need) stage = i;
+  }
+  return stage;
+}
+
+// 给宠物加爱心（含心情加成），返回是否升级了
+export function addHearts(pet, base) {
+  const bonus = pet.mood >= 70 ? 1 : 0; // 心情好有加成
+  pet.hearts += base + bonus;
+  const ns = calcStage(pet.hearts);
+  const leveledUp = ns > pet.stage;
+  pet.stage = ns;
+  return leveledUp;
+}
+
+export const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
