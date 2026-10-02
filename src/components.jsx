@@ -18,9 +18,9 @@ function Bar({ icon, value, color }) {
   );
 }
 
-// ---------- 顶部状态栏：饱食度 / 心情 / 爱心成长 ----------
-// pet: 当前宠物；heartsToNext: 距下一阶段还差多少（满级则为 null）
-export function StatusBar({ pet }) {
+// ---------- 顶部状态栏：饱食度 / 心情 / 爱心成长 / 单词积分 ----------
+// pet: 当前宠物；wordPoints: ⭐ 单词积分
+export function StatusBar({ pet, wordPoints }) {
   const stage = STAGES[pet.stage];
   const next = STAGES[pet.stage + 1];
   const progress = next
@@ -31,6 +31,7 @@ export function StatusBar({ pet }) {
       <div className="status-top">
         <span className="stage-badge">{stage.name}</span>
         <span className="hearts">💗 {pet.hearts}</span>
+        <span className="stars">⭐ {wordPoints || 0}</span>
       </div>
       <Bar icon="🍖" value={pet.fullness} color="#ffb347" />
       <Bar icon="😊" value={pet.mood} color="#ff8fb3" />

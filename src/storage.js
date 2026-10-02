@@ -14,7 +14,7 @@ export function newPet(type, name) {
     type,                       // bunny | cat | fox
     name: name || '',           // 小朋友起的名字
     hearts: 0,                  // 累计爱心（成长经验）
-    stage: 0,                   // 成长阶段 0-4
+    stage: 0,                   // 成长阶段 0-7
     mood: 60,                   // 心情值 0-100
     fullness: 50,               // 饱食度 0-100
   };
@@ -28,6 +28,7 @@ function freshSave() {
     day: todayStr(),             // 上次结算的日期（用于跨天衰减）
     playSec: 0,                  // 本轮已玩秒数（满 30 分钟进休息）
     restUntil: 0,                // 休息结束时间戳（0 = 不在休息）
+    wordPoints: 0,               // ⭐ 单词积分：学单词赚，互动花
     learnedWords: [],            // 学过的单词（英文）
   };
 }
@@ -41,6 +42,7 @@ export function loadSave() {
     // 老存档兼容：补新字段
     if (save.playSec == null) save.playSec = 0;
     if (save.restUntil == null) save.restUntil = 0;
+    if (save.wordPoints == null) save.wordPoints = 0;
     if (!save.learnedWords) save.learnedWords = [];
     // 跨天了：宠物状态轻微衰减（离线不会死，只是需要重新陪一会儿）
     if (save.day !== todayStr()) {

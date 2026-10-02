@@ -72,10 +72,10 @@ body {
 .btn-small { font-size: 13px; padding: 8px 16px; }
 .btn:disabled { opacity: 0.45; filter: grayscale(0.4); cursor: default; }
 
-/* ---------- 领养页 ---------- */
-.adopt-cards { display: flex; gap: 10px; margin-bottom: 18px; }
+/* ---------- 领养页（6 只宠物换行排） ---------- */
+.adopt-cards { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .adopt-card {
-  flex: 1;
+  flex: 1 1 28%;
   background: #fff;
   border: 3px solid transparent;
   border-radius: var(--radius);
@@ -124,6 +124,7 @@ body {
   padding: 4px 14px; border-radius: 999px;
 }
 .hearts { font-weight: 800; font-size: 16px; }
+.stars { font-weight: 800; font-size: 16px; }
 .bar { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .bar-icon { font-size: 16px; width: 22px; text-align: center; }
 .bar-track { flex: 1; height: 12px; background: #f3eef2; border-radius: 999px; overflow: hidden; }
@@ -156,6 +157,12 @@ body {
 @keyframes jump { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-46px) scale(1.03); } }
 .anim-bath .pet { animation: sway 0.8s ease 2; }
 @keyframes sway { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+.anim-sing .pet { animation: singbounce 0.5s ease 3; }
+@keyframes singbounce { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-14px); } 60% { transform: translateY(0); } }
+.anim-dance .pet { animation: spin360 0.9s ease 1; }
+@keyframes spin360 { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.anim-story .pet { animation: rock 0.9s ease 2; }
+@keyframes rock { 0%,100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(4deg) translateY(-3px); } }
 
 .sleep-z { position: absolute; top: 6px; right: 12px; font-size: 30px; animation: zfloat 2s ease-in-out infinite; }
 @keyframes zfloat { 0%,100% { transform: translateY(0); opacity: 0.9; } 50% { transform: translateY(-10px); opacity: 0.5; } }
@@ -238,10 +245,10 @@ body {
 }
 .rest-tip { font-size: 13px; color: var(--ink-soft); margin: 12px 0 0; }
 
-/* ---------- 动作按钮 ---------- */
-.actions { display: flex; gap: 8px; }
+/* ---------- 动作按钮（两行：喂食+互动 / 学单词） ---------- */
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .action-btn {
-  flex: 1; background: #fff; border: none; border-radius: 18px;
+  flex: 1 1 21%; background: #fff; border: none; border-radius: 18px;
   padding: 12px 4px 10px; cursor: pointer; font-family: inherit;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   font-size: 14px; font-weight: 700; color: var(--ink);
@@ -250,8 +257,11 @@ body {
 }
 .action-btn:active { transform: scale(0.93); }
 .action-btn:disabled { opacity: 0.4; }
+.action-btn.cant { opacity: 0.55; filter: grayscale(0.35); } /* ⭐ 不够：置灰但仍可点出提示 */
 .action-btn .a-emoji { font-size: 30px; }
 .action-btn .a-en { font-size: 11px; color: var(--pink-deep); font-weight: 800; }
+.action-btn .a-cost { font-size: 11px; color: #e8a100; font-weight: 800; }
+.action-btn .a-cost.earn { color: var(--mint); }
 .action-btn.feed { background: linear-gradient(135deg, #ffe9b8, #ffcf7d); }
 .action-btn.quiz-btn { background: linear-gradient(135deg, var(--mint-soft), #a8e6c5); }
 

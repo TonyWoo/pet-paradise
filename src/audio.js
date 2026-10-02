@@ -86,3 +86,28 @@ export function sfxBubble() {
       tone(f, t + i * 0.07, 0.06, 'sine', 0.1));
   } catch { /* 忽略 */ }
 }
+
+// 唱歌：do-re-mi 上行小旋律
+export function sfxSing() {
+  try {
+    const t = now();
+    [523, 587, 659, 784].forEach((f, i) => tone(f, t + i * 0.11, 0.14, 'sine'));
+  } catch { /* 忽略 */ }
+}
+
+// 跳舞：欢快的弹跳节奏
+export function sfxDance() {
+  try {
+    const t = now();
+    [392, 523, 392, 659].forEach((f, i) => tone(f, t + i * 0.1, 0.1, 'triangle'));
+  } catch { /* 忽略 */ }
+}
+
+// 讲故事：温柔的摇篮曲式双音
+export function sfxStory() {
+  try {
+    const t = now();
+    tone(659, t, 0.25, 'sine', 0.12);
+    tone(587, t + 0.28, 0.35, 'sine', 0.12);
+  } catch { /* 忽略 */ }
+}

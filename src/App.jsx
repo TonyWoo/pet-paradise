@@ -1,6 +1,7 @@
 // ============================================================
 // App.jsx —— 游戏主流程
-// 领养页 → 主页（喂食 / 抚摸 / 玩耍 / 洗澡 / 单词测验 / 宠物小屋）
+// 领养页 → 主页（喂食 / 6 种互动 / 单词测验 / 宠物小屋）
+// 互动要花 ⭐ 单词积分（测验答对 +2/题、喂食 +1 赚取）
 // 状态更新走 commit()：深拷贝 → 改 → 落盘 → setState，全同步，无时序坑
 // ============================================================
 import { useState, useRef, useEffect } from 'react';
@@ -9,12 +10,17 @@ import { loadSave, persistSave, newPet, activePet, totalHearts, addHearts, clamp
 import { PetAvatar } from './pets.jsx';
 import { StatusBar, FoodPicker, Quiz, LevelUpModal } from './components.jsx';
 import { speak } from './speech.js';
-import { sfxClick, sfxEat, sfxHappy, sfxLevelUp, sfxBubble } from './audio.js';
+import { sfxClick, sfxEat, sfxHappy, sfxLevelUp, sfxBubble, sfxSing, sfxDance, sfxStory } from './audio.js';
 
 // 互动对应的英文单词（边玩边学）
-const PLAY_WORDS = { pet: 'Pet', ball: 'Ball', bath: 'Bath' };
-const PLAY_ZH = { pet: '抚摸', ball: '玩球', bath: '洗澡' };
-const PLAY_ZH2 = { pet: '抚摸', ball: '球', bath: '洗澡' };
+const PLAY_WORDS = { pet: 'Pet', ball: 'Ball', bath: 'Bath', sing: 'Sing', dance: 'Dance', story: 'Story' };
+const PLAY_ZH = { pet: '抚摸', ball: '玩球', bath: '洗澡', sing: '唱歌', dance: '跳舞', story: '讲故事' };
+const PLAY_ZH2 = { pet: '抚摸', ball: '球', bath: '洗澡', sing: '唱歌', dance: '舞', story: '故事' };
+const PLAY_EMOJI = { pet: '🤗', ball: '⚽', bath: '🫧', sing: '🎤', dance: '💃', story: '📖' };
+// 每次互动花费的 ⭐ 单词积分
+const PLAY_COST = { pet: 2, ball: 3, bath: 3, sing: 4, dance: 4, story: 5 };
+// 每次互动加的心情值
+const PLAY_MOOD = { pet: 12, ball: 15, bath: 10, sing: 12, dance: 14, story: 10 };
 
 // ---------------- 领养页 ----------------
 // fixedType: 解锁领养时直接指定类型（跳过选择）；onCancel: 解锁流程可返回
@@ -198,6 +204,7 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
       const p = activePet(s);
       p.fullness = clamp(p.fullness + 25);
       p.mood = clamp(p.mood + 5);
+      s.wordPoints = (s.wordPoints || 0) + 1; // 学了食物单词，+1⭐
       let name = '';
       if (addHearts(p, fav ? 3 : 2)) name = STAGES[p.stage].name;
       if (!s.learnedWords.includes(food.en)) s.learnedWords.push(food.en);
@@ -207,17 +214,25 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
     speak(food.en);
     playAnim('eat');
     float(fav ? '+3💗 最爱！' : '+2💗');
+    float('+1⭐');
     say(fav ? `${pet.name}最爱吃${food.zh}啦！${food.en}！` : `啊呜，真好吃！${food.en} ${food.zh}`);
     if (newStageName) setTimeout(() => { sfxLevelUp(); setLevelUp(newStageName); }, 900);
   };
 
-  // ---- 互动：抚摸 / 玩球 / 洗澡 ----
+  // ---- 互动：抚摸 / 玩球 / 洗澡 / 唱歌 / 跳舞 / 讲故事 ----
+  // 每次互动消耗 ⭐ 单词积分，积分不够先去学单词
   const play = (kind) => {
+    const cost = PLAY_COST[kind];
+    if ((save.wordPoints || 0) < cost) {
+      sfxClick();
+      say('⭐ 不够啦，先去学单词赚积分吧！');
+      return;
+    }
     const word = PLAY_WORDS[kind];
-    const moodAdd = kind === 'ball' ? 15 : kind === 'pet' ? 12 : 10;
     const { newStageName } = commit((s) => {
       const p = activePet(s);
-      p.mood = clamp(p.mood + moodAdd);
+      s.wordPoints = (s.wordPoints || 0) - cost;
+      p.mood = clamp(p.mood + PLAY_MOOD[kind]);
       let name = '';
       if (addHearts(p, 1)) name = STAGES[p.stage].name;
       if (!s.learnedWords.includes(word)) s.learnedWords.push(word);
@@ -236,6 +251,16 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
       setBubbles(Array.from({ length: 8 }, (_, i) => ({ id: id + i, left: 12 + i * 10 })));
       setTimeout(() => setBubbles([]), 1400);
     }
+    if (kind === 'sing') {
+      sfxSing(); playAnim('sing');
+      float('🎵');
+      setTimeout(() => float('🎶'), 350);
+    }
+    if (kind === 'dance') { sfxDance(); playAnim('dance'); }
+    if (kind === 'story') {
+      sfxStory(); playAnim('story');
+      float('📖');
+    }
     float('+1💗');
     float(word);
     say(`${PLAY_ZH[kind]}！${word}（${PLAY_ZH2[kind]}）`);
@@ -245,9 +270,11 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
   // ---- 测验完成 ----
   const onQuizDone = (score) => {
     setShowQuiz(false);
+    const starGain = score * 2; // 答对 +2⭐/题
     const { gained, newStageName } = commit((s) => {
       const p = activePet(s);
       const g = score * 2 + (score === QUIZ_QUESTIONS ? 3 : 0);
+      s.wordPoints = (s.wordPoints || 0) + starGain;
       let name = '';
       if (addHearts(p, g)) name = STAGES[p.stage].name;
       p.mood = clamp(p.mood + 10);
@@ -256,12 +283,16 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
     sfxHappy();
     playAnim('happy');
     float(`+${gained}💗`);
-    say(score === QUIZ_QUESTIONS ? `全对！太厉害了！+${gained}💗` : `答对 ${score} 题！+${gained}💗 继续加油！`);
+    if (starGain > 0) float(`+${starGain}⭐`);
+    say(score === QUIZ_QUESTIONS
+      ? `全对！太厉害了！+${gained}💗 +${starGain}⭐`
+      : `答对 ${score} 题！+${gained}💗${starGain > 0 ? ` +${starGain}⭐` : ''} 继续加油！`);
     if (newStageName) setTimeout(() => { sfxLevelUp(); setLevelUp(newStageName); }, 900);
   };
 
   const resting = save.restUntil > Date.now();
-  const face = anim === 'happy' || anim === 'jump' ? 'happy' : resting ? 'sleepy' : 'normal';
+  const happyAnims = ['happy', 'jump', 'sing', 'dance', 'story'];
+  const face = happyAnims.includes(anim) ? 'happy' : resting ? 'sleepy' : 'normal';
 
   return (
     <div className="screen home">
@@ -270,7 +301,7 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
         <button className="btn btn-ghost btn-small" onClick={() => { sfxClick(); setShowHouse(true); }}>🏠 宠物小屋</button>
       </header>
 
-      <StatusBar pet={pet} />
+      <StatusBar pet={pet} wordPoints={save.wordPoints} />
 
       {/* 本轮游玩时间 */}
       <div className="timebar">
@@ -303,30 +334,37 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
         </button>
       </div>
 
-      {/* 动作按钮 */}
+      {/* 动作按钮：喂食 + 6 种互动（花⭐） + 学单词 */}
       <div className="actions">
         <button className="action-btn feed" onClick={() => { sfxClick(); setShowFood(true); }}>
-          <span className="a-emoji">🍼</span><span>喂食</span>
+          <span className="a-emoji">🍼</span><span>喂食</span><span className="a-en">免费</span>
         </button>
-        <button className="action-btn" onClick={() => play('pet')}>
-          <span className="a-emoji">🤗</span><span>抚摸</span><span className="a-en">Pet</span>
-        </button>
-        <button className="action-btn" onClick={() => play('ball')}>
-          <span className="a-emoji">⚽</span><span>玩球</span><span className="a-en">Ball</span>
-        </button>
-        <button className="action-btn" onClick={() => play('bath')}>
-          <span className="a-emoji">🫧</span><span>洗澡</span><span className="a-en">Bath</span>
-        </button>
+        {Object.keys(PLAY_WORDS).map((kind) => {
+          const afford = (save.wordPoints || 0) >= PLAY_COST[kind];
+          return (
+            <button
+              key={kind}
+              className={'action-btn' + (afford ? '' : ' cant')}
+              onClick={() => play(kind)}
+            >
+              <span className="a-emoji">{PLAY_EMOJI[kind]}</span>
+              <span>{PLAY_ZH[kind]}</span>
+              <span className="a-en">{PLAY_WORDS[kind]}</span>
+              <span className="a-cost">{PLAY_COST[kind]}⭐</span>
+            </button>
+          );
+        })}
         <button
           className="action-btn quiz-btn"
           onClick={() => { sfxClick(); setShowQuiz(true); }}
         >
           <span className="a-emoji">📖</span><span>学单词</span>
           <span className="a-en">Quiz</span>
+          <span className="a-cost earn">赚⭐</span>
         </button>
       </div>
 
-      <p className="tip">💡 喂食、互动、答题都能得💗，💗攒够宠物就会长大哦！玩 {PLAY_MINUTES} 分钟要休息 {REST_MINUTES} 分钟，让眼睛歇一歇～</p>
+      <p className="tip">💡 学单词赚⭐，花⭐和宠物互动！喂食、互动、答题都能得💗，💗攒够宠物就会长大哦！玩 {PLAY_MINUTES} 分钟要休息 {REST_MINUTES} 分钟，让眼睛歇一歇～</p>
 
       {showFood && <FoodPicker favoriteId={cfg.favoriteFood} onPick={feed} onClose={() => setShowFood(false)} />}
       {showQuiz && <Quiz onDone={onQuizDone} onQuit={() => setShowQuiz(false)} />}

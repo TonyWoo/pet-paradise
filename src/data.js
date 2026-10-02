@@ -2,7 +2,7 @@
 // data.js —— 游戏全部静态数据：宠物、食物、单词题库、成长配置
 // ============================================================
 
-// 三只宠物配置
+// 六只宠物配置
 export const PETS = {
   bunny: {
     type: 'bunny',
@@ -34,8 +34,35 @@ export const PETS = {
     earColor: '#e56b2d',
     blush: '#ff9d9d',
   },
+  pochacco: {
+    type: 'pochacco',
+    name: '帕恰狗',
+    emoji: '🐶',
+    personality: '软乎乎的小狗，最爱被摸头',
+    favoriteFood: 'milk',
+    bodyColor: '#ffffff',
+    blush: '#ffb3c7',
+  },
+  bear: {
+    type: 'bear',
+    name: '棕熊',
+    emoji: '🐻',
+    personality: '憨憨的，抱起来最舒服',
+    favoriteFood: 'cookie',
+    bodyColor: '#c98d55',
+    blush: '#ff9d9d',
+  },
+  penguin: {
+    type: 'penguin',
+    name: '企鹅',
+    emoji: '🐧',
+    personality: '摇摇摆摆走路，爱吃鱼',
+    favoriteFood: 'fish',
+    bodyColor: '#54546a',
+    blush: '#ffb3c7',
+  },
 };
-export const PET_ORDER = ['bunny', 'cat', 'fox'];
+export const PET_ORDER = ['bunny', 'cat', 'fox', 'pochacco', 'bear', 'penguin'];
 
 // 食物：每种都是英文单词卡（英文 + 中文 + emoji）
 export const FOODS = [
@@ -251,13 +278,16 @@ export const WORDS = [
   { en: 'Helicopter', zh: '直升机', emoji: '🚁', cat: '交通' },
 ];
 
-// 成长阶段：5 阶，hearts 为累计爱心阈值
+// 成长阶段：8 阶，hearts 为累计爱心阈值
 export const STAGES = [
-  { name: '蛋宝宝',   need: 0,  desc: '一颗可爱的蛋，等待孵化' },
-  { name: '小宝宝',   need: 8,  desc: '破壳啦！小小一只' },
-  { name: '小少年',   need: 20, desc: '长大了一圈，更活泼了' },
-  { name: '大朋友',   need: 40, desc: '已经是可靠的大朋友了' },
-  { name: '闪亮之星', need: 70, desc: '闪闪发光的最终形态！' },
+  { name: '蛋宝宝',   need: 0,   desc: '一颗可爱的蛋，等待孵化' },
+  { name: '破壳啦',   need: 6,   desc: '探出小脑袋，好奇张望' },
+  { name: '小宝宝',   need: 14,  desc: '小小一只，软软糯糯' },
+  { name: '小少年',   need: 26,  desc: '长大了一圈，更活泼了' },
+  { name: '大朋友',   need: 42,  desc: '已经是可靠的大朋友了' },
+  { name: '小明星',   need: 62,  desc: '戴上蝴蝶结，人见人爱' },
+  { name: '闪亮之星', need: 86,  desc: '头戴皇冠，闪闪发光' },
+  { name: '传奇宝贝', need: 115, desc: '彩虹环绕的传说形态！' },
 ];
 
 // 游玩节奏：玩 30 分钟 → 休息 15 分钟，循环（防沉迷）
@@ -266,7 +296,7 @@ export const REST_MINUTES = 15;  // 每轮强制休息（分钟）
 export const QUIZ_QUESTIONS = 5; // 每次测验题数
 
 // 解锁新宠物需要的总爱心
-export const UNLOCK_NEED = [0, 50, 120]; // 第1/2/3只
+export const UNLOCK_NEED = [0, 40, 90, 150, 220, 300]; // 第1~6只
 
 // 随机取 n 个不重复的数组元素
 export function sample(arr, n) {
