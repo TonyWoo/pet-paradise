@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   PETS, PET_ORDER, FOODS, WORDS, STAGES, UNLOCK_NEED,
-  sample, shuffle, todayStr,
+  sample, shuffle, todayStr, seededShuffle, dailyFoods,
 } from './data.js';
 
 describe('宠物配置', () => {
@@ -66,8 +66,7 @@ describe('单词题库', () => {
   });
 });
 
-describe('工具函数', () => {
-  it('sample 取 n 个不重复元素', () => {
+describe('工具函数', () => {  it('sample 取 n 个不重复元素', () => {
     const arr = [1, 2, 3, 4, 5];
     const got = sample(arr, 3);
     expect(got).toHaveLength(3);
@@ -83,5 +82,34 @@ describe('工具函数', () => {
 
   it('todayStr 格式为 YYYY-M-D', () => {
     expect(todayStr()).toMatch(/^\d{4}-\d{1,2}-\d{1,2}$/);
+  });
+});
+
+describe('每日菜单', () => {
+  it('FOODS 食物池有 12 种', () => {
+    expect(FOODS).toHaveLength(12);
+    expect(new Set(FOODS.map((f) => f.id)).size).toBe(12);
+  });
+
+  it('同一天菜单稳定：每天 6 种、不重复、必含最爱', () => {
+    const a = dailyFoods('2026-10-2', 'apple');
+    const b = dailyFoods('2026-10-2', 'apple');
+    expect(a).toEqual(b);
+    expect(a).toHaveLength(6);
+    expect(new Set(a.map((f) => f.id)).size).toBe(6);
+    expect(a.some((f) => f.id === 'apple')).toBe(true);
+  });
+
+  it('菜单里的食物都在食物池中', () => {
+    const ids = new Set(FOODS.map((f) => f.id));
+    for (const f of dailyFoods('2026-10-3', 'milk')) {
+      expect(ids.has(f.id)).toBe(true);
+    }
+  });
+
+  it('seededShuffle 同一种子结果一致，不修改原数组', () => {
+    const arr = [1, 2, 3, 4, 5, 6];
+    expect(seededShuffle(arr, 'x')).toEqual(seededShuffle(arr, 'x'));
+    expect(arr).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

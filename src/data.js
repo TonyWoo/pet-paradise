@@ -99,7 +99,44 @@ export const FOODS = [
   { id: 'cookie', en: 'Cookie', zh: '饼干', emoji: '🍪' },
   { id: 'fish',   en: 'Fish',   zh: '鱼',   emoji: '🐟' },
   { id: 'banana', en: 'Banana', zh: '香蕉', emoji: '🍌' },
+  { id: 'bread',  en: 'Bread',  zh: '面包', emoji: '🍞' },
+  { id: 'cake',   en: 'Cake',   zh: '蛋糕', emoji: '🍰' },
+  { id: 'icecream', en: 'Ice cream', zh: '冰淇淋', emoji: '🍨' },
+  { id: 'strawberry', en: 'Strawberry', zh: '草莓', emoji: '🍓' },
+  { id: 'grape',  en: 'Grape',  zh: '葡萄', emoji: '🍇' },
+  { id: 'egg',    en: 'Egg',    zh: '鸡蛋', emoji: '🥚' },
 ];
+
+// 按字符串种子洗牌：同一天结果稳定（用于每日菜单）
+export function seededShuffle(arr, seedStr) {
+  let h = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) {
+    h ^= seedStr.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const rand = () => {
+    h |= 0; h = (h + 0x6D2B79F5) | 0;
+    let t = Math.imul(h ^ (h >>> 15), 1 | h);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 每日菜单：从食物池按日期选 6 种，当天固定；必含宠物的最爱食物
+export function dailyFoods(dateStr, favoriteId, count = 6) {
+  const picked = seededShuffle(FOODS, `menu-${dateStr}`).slice(0, count);
+  if (favoriteId && !picked.some((f) => f.id === favoriteId)) {
+    const fav = FOODS.find((f) => f.id === favoriteId);
+    if (fav) picked[picked.length - 1] = fav;
+  }
+  return picked;
+}
 
 // 单词题库：2–3 年级水平，共 200 词（食物 / 动物 / 颜色 / 数字 / 家庭 / 学校 / 身体 / 衣服 / 自然 / 动作 / 交通）
 export const WORDS = [

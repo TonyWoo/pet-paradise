@@ -2,7 +2,7 @@
 // components.jsx —— 通用 UI 组件：状态栏 / 食物选择器 / 单词测验
 // ============================================================
 import { useState, useMemo } from 'react';
-import { FOODS, WORDS, STAGES, QUIZ_QUESTIONS, sample, shuffle } from './data.js';
+import { WORDS, STAGES, QUIZ_QUESTIONS, sample, shuffle } from './data.js';
 import { speak } from './speech.js';
 import { sfxClick, sfxCorrect, sfxWrong } from './audio.js';
 
@@ -47,13 +47,13 @@ export function StatusBar({ pet, wordPoints }) {
 }
 
 // ---------- 喂食弹窗：食物单词卡片 ----------
-export function FoodPicker({ favoriteId, onPick, onClose }) {
+export function FoodPicker({ foods, favoriteId, onPick, onClose }) {
   return (
     <div className="modal-mask" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>🍽️ 选一样好吃的 <span className="modal-sub">点 🔊 听发音</span></h3>
+        <h3>🍽️ 选一样好吃的 <span className="modal-sub">📅 今日菜单 · 点 🔊 听发音</span></h3>
         <div className="food-grid">
-          {FOODS.map((f) => (
+          {(foods || []).map((f) => (
             <button
               key={f.id}
               className={'food-card' + (f.id === favoriteId ? ' favorite' : '')}

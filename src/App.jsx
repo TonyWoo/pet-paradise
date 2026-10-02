@@ -4,8 +4,8 @@
 // 互动要花 ⭐ 单词积分（测验答对 +2/题、喂食 +1 赚取）
 // 状态更新走 commit()：深拷贝 → 改 → 落盘 → setState，全同步，无时序坑
 // ============================================================
-import { useState, useRef, useEffect } from 'react';
-import { PETS, PET_ORDER, FOODS, STAGES, UNLOCK_NEED, QUIZ_QUESTIONS, PLAY_MINUTES, REST_MINUTES } from './data.js';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { PETS, PET_ORDER, FOODS, STAGES, UNLOCK_NEED, QUIZ_QUESTIONS, PLAY_MINUTES, REST_MINUTES, dailyFoods, todayStr } from './data.js';
 import { loadSave, persistSave, newPet, activePet, totalHearts, addHearts, clamp } from './storage.js';
 import { PetAvatar } from './pets.jsx';
 import { StatusBar, FoodPicker, Quiz, LevelUpModal } from './components.jsx';
@@ -153,6 +153,8 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
   const pet = activePet(save);
   const cfg = PETS[pet.type];
   const [showFood, setShowFood] = useState(false);
+  // 每日菜单：按日期从 12 种食物里选 6 种，必含当前宠物的最爱
+  const menuFoods = useMemo(() => dailyFoods(todayStr(), cfg.favoriteFood), [cfg.favoriteFood]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [showHouse, setShowHouse] = useState(false);
   const [levelUp, setLevelUp] = useState(null);   // 升级弹窗：新阶段名
@@ -366,7 +368,7 @@ function HomeScreen({ save, commit, onUnlockRequest, now, woke, clearWoke }) {
 
       <p className="tip">💡 学单词赚⭐，花⭐和宠物互动！喂食、互动、答题都能得💗，💗攒够宠物就会长大哦！玩 {PLAY_MINUTES} 分钟要休息 {REST_MINUTES} 分钟，让眼睛歇一歇～</p>
 
-      {showFood && <FoodPicker favoriteId={cfg.favoriteFood} onPick={feed} onClose={() => setShowFood(false)} />}
+      {showFood && <FoodPicker foods={menuFoods} favoriteId={cfg.favoriteFood} onPick={feed} onClose={() => setShowFood(false)} />}
       {showQuiz && <Quiz onDone={onQuizDone} onQuit={() => setShowQuiz(false)} />}
       {showHouse && (
         <PetHouse
