@@ -39,10 +39,15 @@ export function loadSave() {
     const raw = localStorage.getItem(KEY);
     const save = raw ? JSON.parse(raw) : freshSave();
     if (!save.pets) return freshSave();
-    // 老存档兼容：补新字段
+    // 老存档兼容：补新字段；pochacco 更名为 cinnamoroll
     if (save.playSec == null) save.playSec = 0;
     if (save.restUntil == null) save.restUntil = 0;
     if (save.wordPoints == null) save.wordPoints = 0;
+    let migrated = false;
+    save.pets.forEach((p) => {
+      if (p.type === 'pochacco') { p.type = 'cinnamoroll'; migrated = true; }
+    });
+    if (migrated) persistSave(save);
     if (!save.learnedWords) save.learnedWords = [];
     // 跨天了：宠物状态轻微衰减（离线不会死，只是需要重新陪一会儿）
     if (save.day !== todayStr()) {

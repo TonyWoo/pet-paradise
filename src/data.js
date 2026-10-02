@@ -34,11 +34,11 @@ export const PETS = {
     earColor: '#e56b2d',
     blush: '#ff9d9d',
   },
-  pochacco: {
-    type: 'pochacco',
-    name: '帕恰狗',
+  cinnamoroll: {
+    type: 'cinnamoroll',
+    name: '玉桂狗',
     emoji: '🐶',
-    personality: '软乎乎的小狗，最爱被摸头',
+    personality: '长耳朵软乎乎，爱撒娇',
     favoriteFood: 'milk',
     bodyColor: '#ffffff',
     blush: '#ffb3c7',
@@ -61,8 +61,17 @@ export const PETS = {
     bodyColor: '#54546a',
     blush: '#ffb3c7',
   },
+  panda: {
+    type: 'panda',
+    name: '大熊猫',
+    emoji: '🐼',
+    personality: '圆滚滚的团子，爱吃爱睡',
+    favoriteFood: 'apple',
+    bodyColor: '#ffffff',
+    blush: '#ffb3c7',
+  },
 };
-export const PET_ORDER = ['bunny', 'cat', 'fox', 'pochacco', 'bear', 'penguin'];
+export const PET_ORDER = ['bunny', 'cat', 'fox', 'cinnamoroll', 'bear', 'penguin', 'panda'];
 
 // 食物：每种都是英文单词卡（英文 + 中文 + emoji）
 export const FOODS = [
@@ -296,7 +305,7 @@ export const REST_MINUTES = 15;  // 每轮强制休息（分钟）
 export const QUIZ_QUESTIONS = 5; // 每次测验题数
 
 // 解锁新宠物需要的总爱心
-export const UNLOCK_NEED = [0, 40, 90, 150, 220, 300]; // 第1~6只
+export const UNLOCK_NEED = [0, 40, 90, 150, 220, 300, 400]; // 第1~7只
 
 // 随机取 n 个不重复的数组元素
 export function sample(arr, n) {

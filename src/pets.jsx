@@ -1,5 +1,5 @@
 // ============================================================
-// pets.jsx —— 六只宠物的手绘 SVG 形象
+// pets.jsx —— 七只宠物的手绘 SVG 形象
 // 风格：圆滚滚、大眼睛、腮红，Q 版可爱风
 // stage 0=蛋宝宝 1=破壳啦 2=小宝宝 3=小少年 4=大朋友 5=小明星(蝴蝶结) 6=闪亮之星(皇冠+星光) 7=传奇宝贝(皇冠+彩虹光环)
 // face: normal 普通 / happy 开心 / sleepy 睡觉
@@ -214,27 +214,56 @@ function RainbowHalo() {
   );
 }
 
-// ---------- 帕恰狗：白小狗 + 黑斑点 + 长垂耳朵（原创画法） ----------
-function Pochacco({ face, deco }) {
+// ---------- 玉桂狗：白色 + 超长垂耳 + 粉腮红 + 肉桂卷尾巴 ----------
+function Cinnamoroll({ face, deco }) {
   return (
     <g>
-      {/* 长垂耳朵 */}
-      <ellipse cx="46" cy="102" rx="14" ry="36" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" transform="rotate(10 46 102)" />
-      <ellipse cx="154" cy="102" rx="14" ry="36" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" transform="rotate(-10 154 102)" />
-      {/* 小尾巴 */}
-      <circle cx="150" cy="144" r="12" fill="#ffffff" stroke="#d9d9e3" strokeWidth="2.5" />
+      {/* 超长垂耳朵：从头顶一直垂到脚边 */}
+      <path d="M66 74 C44 92 36 128 44 160 C48 174 66 172 68 158 C72 128 74 100 78 80 Z"
+        fill="#ffffff" stroke="#9db8dd" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M134 74 C156 92 164 128 156 160 C152 174 134 172 132 158 C128 128 126 100 122 80 Z"
+        fill="#ffffff" stroke="#9db8dd" strokeWidth="3" strokeLinejoin="round" />
+      {/* 肉桂卷小尾巴 */}
+      <g transform="translate(152 136)">
+        <circle r="10" fill="#ffffff" stroke="#9db8dd" strokeWidth="2.5" />
+        <path d="M0 -5 a5 5 0 1 1 -5 5 a3 3 0 1 0 3 -3" fill="none" stroke="#9db8dd" strokeWidth="2" strokeLinecap="round" />
+      </g>
       {/* 脚 */}
-      <ellipse cx="78" cy="164" rx="15" ry="9" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" />
-      <ellipse cx="122" cy="164" rx="15" ry="9" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" />
+      <ellipse cx="78" cy="164" rx="15" ry="9" fill="#ffffff" stroke="#9db8dd" strokeWidth="3" />
+      <ellipse cx="122" cy="164" rx="15" ry="9" fill="#ffffff" stroke="#9db8dd" strokeWidth="3" />
       {/* 圆滚滚的身体 */}
-      <circle cx="100" cy="115" r="52" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" />
-      {/* 黑色斑点：眼罩 + 身上 */}
-      <ellipse cx="130" cy="96" rx="17" ry="14" fill="#3d3d4d" />
-      <ellipse cx="66" cy="148" rx="10" ry="8" fill="#3d3d4d" opacity="0.9" />
+      <circle cx="100" cy="115" r="52" fill="#ffffff" stroke="#9db8dd" strokeWidth="3" />
       {/* 脸 */}
       <Eyes face={face} />
       <Blush color="#ffb3c7" />
-      <ellipse cx="100" cy="120" rx="6.5" ry="5" fill="#3d3d4d" />
+      <Mouth face={face} y={127} />
+      {deco}
+    </g>
+  );
+}
+
+// ---------- 大熊猫：黑白团子 + 黑眼圈 ----------
+function Panda({ face, deco }) {
+  return (
+    <g>
+      {/* 黑耳朵 */}
+      <circle cx="62" cy="62" r="16" fill="#3d3d4d" />
+      <circle cx="138" cy="62" r="16" fill="#3d3d4d" />
+      {/* 黑手臂 */}
+      <ellipse cx="50" cy="128" rx="11" ry="24" fill="#3d3d4d" transform="rotate(12 50 128)" />
+      <ellipse cx="150" cy="128" rx="11" ry="24" fill="#3d3d4d" transform="rotate(-12 150 128)" />
+      {/* 黑脚 */}
+      <ellipse cx="78" cy="164" rx="15" ry="9" fill="#3d3d4d" />
+      <ellipse cx="122" cy="164" rx="15" ry="9" fill="#3d3d4d" />
+      {/* 圆滚滚的白身体 */}
+      <circle cx="100" cy="115" r="52" fill="#ffffff" stroke="#d9d9e3" strokeWidth="3" />
+      {/* 黑眼圈（比眼睛大一圈，露出黑边） */}
+      <ellipse cx="82" cy="106" rx="17" ry="19" fill="#3d3d4d" transform="rotate(-10 82 106)" />
+      <ellipse cx="118" cy="106" rx="17" ry="19" fill="#3d3d4d" transform="rotate(10 118 106)" />
+      {/* 脸 */}
+      <Eyes face={face} />
+      <Blush color="#ffb3c7" />
+      <ellipse cx="100" cy="120" rx="6" ry="4.5" fill="#3d3d4d" />
       <Mouth face={face} y={127} />
       {deco}
     </g>
@@ -300,18 +329,20 @@ function Penguin({ face, deco }) {
   );
 }
 
-const EGG_TINT = { bunny: '#ffe9f2', cat: '#ffedda', fox: '#ffe4cf', pochacco: '#eef2f7', bear: '#f0e2d0', penguin: '#e8eef5' };
+const EGG_TINT = { bunny: '#ffe9f2', cat: '#ffedda', fox: '#ffe4cf', cinnamoroll: '#eef2f7', bear: '#f0e2d0', penguin: '#e8eef5', panda: '#eef0f4' };
 
 // 阶段缩放：越长大越大只
 const STAGE_SCALE = [1, 0.72, 0.82, 0.92, 1.0, 1.08, 1.14, 1.2];
 
 /**
  * 宠物形象主组件
- * @param type bunny | cat | fox | pochacco | bear | penguin
+ * @param type bunny | cat | fox | cinnamoroll | bear | penguin | panda
  * @param stage 0-7 成长阶段
  * @param face normal | happy | sleepy
  */
 export function PetAvatar({ type, stage, face = 'normal', className = '' }) {
+  // 老存档里的 pochacco 自动转为 cinnamoroll
+  const t = type === 'pochacco' ? 'cinnamoroll' : type;
   let body;
   const deco = (
     <>
@@ -321,17 +352,19 @@ export function PetAvatar({ type, stage, face = 'normal', className = '' }) {
     </>
   );
   if (stage === 0) {
-    body = <Egg tint={EGG_TINT[type]} />;
-  } else if (type === 'bunny') {
+    body = <Egg tint={EGG_TINT[t]} />;
+  } else if (t === 'bunny') {
     body = <Bunny face={face} deco={deco} />;
-  } else if (type === 'cat') {
+  } else if (t === 'cat') {
     body = <Cat face={face} deco={deco} />;
-  } else if (type === 'fox') {
+  } else if (t === 'fox') {
     body = <Fox face={face} deco={deco} />;
-  } else if (type === 'pochacco') {
-    body = <Pochacco face={face} deco={deco} />;
-  } else if (type === 'bear') {
+  } else if (t === 'cinnamoroll') {
+    body = <Cinnamoroll face={face} deco={deco} />;
+  } else if (t === 'bear') {
     body = <Bear face={face} deco={deco} />;
+  } else if (t === 'panda') {
+    body = <Panda face={face} deco={deco} />;
   } else {
     body = <Penguin face={face} deco={deco} />;
   }
