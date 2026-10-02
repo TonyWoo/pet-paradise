@@ -1,5 +1,5 @@
 // ============================================================
-// pets.jsx —— 七只宠物的手绘 SVG 形象
+// pets.jsx —— 九只宠物的手绘 SVG 形象
 // 风格：圆滚滚、大眼睛、腮红，Q 版可爱风
 // stage 0=蛋宝宝 1=破壳啦 2=小宝宝 3=小少年 4=大朋友 5=小明星(蝴蝶结) 6=闪亮之星(皇冠+星光) 7=传奇宝贝(皇冠+彩虹光环)
 // face: normal 普通 / happy 开心 / sleepy 睡觉
@@ -329,14 +329,88 @@ function Penguin({ face, deco }) {
   );
 }
 
-const EGG_TINT = { bunny: '#ffe9f2', cat: '#ffedda', fox: '#ffe4cf', cinnamoroll: '#eef2f7', bear: '#f0e2d0', penguin: '#e8eef5', panda: '#eef0f4' };
+// ---------- 神兽麒麟（原创Q版）：鹿身 + 小龙角 + 火焰鬃毛 + 鳞片纹 ----------
+function Qilin({ face, deco }) {
+  return (
+    <g>
+      {/* 小龙角 */}
+      <g stroke="#c98d55" strokeWidth="5" strokeLinecap="round" fill="none">
+        <path d="M78 52 L70 30 M78 52 L86 32" />
+        <path d="M122 52 L114 30 M122 52 L130 32" />
+      </g>
+      <circle cx="70" cy="28" r="5" fill="#ffd93d" />
+      <circle cx="86" cy="30" r="5" fill="#ffd93d" />
+      <circle cx="114" cy="30" r="5" fill="#ffd93d" />
+      <circle cx="130" cy="28" r="5" fill="#ffd93d" />
+      {/* 火焰鬃毛 */}
+      <g fill="#ff9d5e">
+        <path d="M60 78 q-14 -8 -10 -26 q12 4 16 14 q-2 -16 10 -22 q4 14 2 24 q6 -10 16 -12 q-2 14 -12 22 Z" />
+        <path d="M140 78 q14 -8 10 -26 q-12 4 -16 14 q2 -16 -10 -22 q-4 14 -2 24 q-6 -10 -16 -12 q2 14 12 22 Z" />
+      </g>
+      {/* 鹿耳 */}
+      <ellipse cx="62" cy="66" rx="10" ry="16" fill="#e8b96a" stroke="#c98d55" strokeWidth="2.5" transform="rotate(-18 62 66)" />
+      <ellipse cx="138" cy="66" rx="10" ry="16" fill="#e8b96a" stroke="#c98d55" strokeWidth="2.5" transform="rotate(18 138 66)" />
+      {/* 蹄子 */}
+      <ellipse cx="78" cy="164" rx="15" ry="9" fill="#8a5a2b" />
+      <ellipse cx="122" cy="164" rx="15" ry="9" fill="#8a5a2b" />
+      {/* 圆滚滚的身体（金麟色） */}
+      <circle cx="100" cy="115" r="52" fill="#f2c14e" stroke="#c98d55" strokeWidth="3" />
+      {/* 鳞片纹 */}
+      <g fill="#e0a83c" opacity="0.55">
+        <ellipse cx="100" cy="148" rx="14" ry="10" />
+        <ellipse cx="72" cy="140" rx="10" ry="8" />
+        <ellipse cx="128" cy="140" rx="10" ry="8" />
+      </g>
+      {/* 脸 */}
+      <Eyes face={face} />
+      <Blush color="#ff9d9d" />
+      <ellipse cx="100" cy="122" rx="6" ry="4.5" fill="#8a5a2b" />
+      <Mouth face={face} y={128} />
+      {deco}
+    </g>
+  );
+}
+
+// ---------- 顶呱呱（原创寻宝小精灵）：薄荷绿团子 + 探险小帽 + 藏宝图围巾 ----------
+function Dingguagua({ face, deco }) {
+  return (
+    <g>
+      {/* 探险小帽 */}
+      <g>
+        <ellipse cx="100" cy="52" rx="34" ry="10" fill="#e8b96a" />
+        <path d="M74 52 Q76 22 100 22 Q124 22 126 52 Z" fill="#f2c14e" stroke="#c98d55" strokeWidth="2.5" />
+        <circle cx="100" cy="20" r="6" fill="#ff6b6b" />
+      </g>
+      {/* 小手臂 */}
+      <ellipse cx="50" cy="128" rx="10" ry="22" fill="#a8e6b8" transform="rotate(14 50 128)" />
+      <ellipse cx="150" cy="128" rx="10" ry="22" fill="#a8e6b8" transform="rotate(-14 150 128)" />
+      {/* 脚 */}
+      <ellipse cx="78" cy="164" rx="15" ry="9" fill="#8fd6a0" />
+      <ellipse cx="122" cy="164" rx="15" ry="9" fill="#8fd6a0" />
+      {/* 圆滚滚的薄荷绿身体 */}
+      <circle cx="100" cy="115" r="52" fill="#bdf0cd" stroke="#7ecb93" strokeWidth="3" />
+      {/* 肚皮上的星星藏宝记号 */}
+      <g transform="translate(100 148)" fill="#ffd93d" stroke="#e0a83c" strokeWidth="1.5">
+        <polygon points="0,-12 3.5,-3.7 12,-3.7 5.2,2.2 7.6,10.5 0,5.5 -7.6,10.5 -5.2,2.2 -12,-3.7 -3.5,-3.7" />
+      </g>
+      {/* 脸 */}
+      <Eyes face={face} />
+      <Blush color="#ff9d9d" />
+      <ellipse cx="100" cy="121" rx="5.5" ry="4" fill="#4a7c59" />
+      <Mouth face={face} y={127} />
+      {deco}
+    </g>
+  );
+}
+
+const EGG_TINT = { bunny: '#ffe9f2', cat: '#ffedda', fox: '#ffe4cf', cinnamoroll: '#eef2f7', bear: '#f0e2d0', penguin: '#e8eef5', panda: '#eef0f4', qilin: '#fdf3d8', dingguagua: '#e2f7e9' };
 
 // 阶段缩放：越长大越大只
 const STAGE_SCALE = [1, 0.72, 0.82, 0.92, 1.0, 1.08, 1.14, 1.2];
 
 /**
  * 宠物形象主组件
- * @param type bunny | cat | fox | cinnamoroll | bear | penguin | panda
+ * @param type bunny | cat | fox | cinnamoroll | bear | penguin | panda | qilin | dingguagua
  * @param stage 0-7 成长阶段
  * @param face normal | happy | sleepy
  */
@@ -365,6 +439,10 @@ export function PetAvatar({ type, stage, face = 'normal', className = '' }) {
     body = <Bear face={face} deco={deco} />;
   } else if (t === 'panda') {
     body = <Panda face={face} deco={deco} />;
+  } else if (t === 'qilin') {
+    body = <Qilin face={face} deco={deco} />;
+  } else if (t === 'dingguagua') {
+    body = <Dingguagua face={face} deco={deco} />;
   } else {
     body = <Penguin face={face} deco={deco} />;
   }

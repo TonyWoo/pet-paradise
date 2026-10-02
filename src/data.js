@@ -70,8 +70,26 @@ export const PETS = {
     bodyColor: '#ffffff',
     blush: '#ffb3c7',
   },
+  qilin: {
+    type: 'qilin',
+    name: '神兽麒麟',
+    emoji: '🦄',
+    personality: '祥瑞神兽，带来好运',
+    favoriteFood: 'apple',
+    bodyColor: '#f2c14e',
+    blush: '#ff9d9d',
+  },
+  dingguagua: {
+    type: 'dingguagua',
+    name: '顶呱呱',
+    emoji: '🧭',
+    personality: '寻宝小精灵，最爱探险',
+    favoriteFood: 'cookie',
+    bodyColor: '#bdf0cd',
+    blush: '#ff9d9d',
+  },
 };
-export const PET_ORDER = ['bunny', 'cat', 'fox', 'cinnamoroll', 'bear', 'penguin', 'panda'];
+export const PET_ORDER = ['bunny', 'cat', 'fox', 'cinnamoroll', 'bear', 'penguin', 'panda', 'qilin', 'dingguagua'];
 
 // 食物：每种都是英文单词卡（英文 + 中文 + emoji）
 export const FOODS = [
@@ -87,7 +105,7 @@ export const FOODS = [
 export const WORDS = [
   { en: 'Apple', zh: '苹果', emoji: '🍎', cat: '食物' },
   { en: 'Banana', zh: '香蕉', emoji: '🍌', cat: '食物' },
-  { en: 'Orange', zh: '橙子', emoji: '🍊', cat: '食物' },
+  { en: 'Lemon', zh: '柠檬', emoji: '🍋', cat: '食物' },
   { en: 'Grape', zh: '葡萄', emoji: '🍇', cat: '食物' },
   { en: 'Watermelon', zh: '西瓜', emoji: '🍉', cat: '食物' },
   { en: 'Strawberry', zh: '草莓', emoji: '🍓', cat: '食物' },
@@ -104,7 +122,7 @@ export const WORDS = [
   { en: 'Bread', zh: '面包', emoji: '🍞', cat: '食物' },
   { en: 'Rice', zh: '米饭', emoji: '🍚', cat: '食物' },
   { en: 'Noodles', zh: '面条', emoji: '🍜', cat: '食物' },
-  { en: 'Fish', zh: '鱼', emoji: '🐟', cat: '食物' },
+  { en: 'Meat', zh: '肉', emoji: '🥩', cat: '食物' },
   { en: 'Chicken', zh: '鸡肉', emoji: '🍗', cat: '食物' },
   { en: 'Cake', zh: '蛋糕', emoji: '🍰', cat: '食物' },
   { en: 'Cookie', zh: '饼干', emoji: '🍪', cat: '食物' },
@@ -305,7 +323,7 @@ export const REST_MINUTES = 15;  // 每轮强制休息（分钟）
 export const QUIZ_QUESTIONS = 5; // 每次测验题数
 
 // 解锁新宠物需要的总爱心
-export const UNLOCK_NEED = [0, 40, 90, 150, 220, 300, 400]; // 第1~7只
+export const UNLOCK_NEED = [0, 40, 90, 150, 220, 300, 400, 520, 660]; // 第1~9只
 
 // 随机取 n 个不重复的数组元素
 export function sample(arr, n) {
